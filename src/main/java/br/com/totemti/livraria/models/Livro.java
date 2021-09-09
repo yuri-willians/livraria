@@ -1,5 +1,7 @@
 package br.com.totemti.livraria.models;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -60,11 +62,16 @@ public class Livro extends Entidade {
     }
 
     public Set<Autor> getAutores() {
+        if (autores == null) {
+            Collections.emptySet();
+        }
         return this.autores;
     }
 
-    public void setAutores(Set<Autor> autores) {
-        this.autores = autores;
+    public void incluirAutor (Autor autor) {
+        if (autores == null) {
+            autores = new HashSet<>();
+        }
+        autores.add(autor);
     }
-
 }

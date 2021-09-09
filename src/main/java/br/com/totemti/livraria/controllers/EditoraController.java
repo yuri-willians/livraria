@@ -1,5 +1,6 @@
 package br.com.totemti.livraria.controllers;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.totemti.livraria.dto.EditoraDTO;
 import br.com.totemti.livraria.models.Editora;
 import br.com.totemti.livraria.services.EditoraService;
 
@@ -17,21 +19,29 @@ import br.com.totemti.livraria.services.EditoraService;
 @RequestMapping(value = "/editoras")
 public class EditoraController {
 
+    private ModelMapper modelMapper;
     private EditoraService editoraService;
 
     @Autowired
-    public EditoraController(EditoraService editoraService) {
+    public EditoraController(ModelMapper modelMapper, EditoraService editoraService) {
+        this.modelMapper = modelMapper;
         this.editoraService = editoraService;
     }
     
     @GetMapping
-    public ResponseEntity<Page<Editora>> index(@PageableDefault(sort = "nome") Pageable pageable) {
-        return ResponseEntity.ok(editoraService.listar(pageable));
+    public ResponseEntity<Page<EditoraDTO>> index(@PageableDefault(sort = "nome") Pageable pageable) {
+        Page editoras = editoraService
+            .listar(pageable)
+            .map(editora -> modelMapper.map(editora, EditoraDTO.class));
+        return ResponseEntity.ok(editoras);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Editora> show(@PathVariable(name = "id") Long id) {
-        return ResponseEntity.ok(editoraService.buscar(id));
+    public ResponseEntity<EditoraDTO> show(@PathVariable(name = "id") Long id) {
+        Editora editora = editoraService.buscar(id);
+
+        EditoraDTO editoraDTO = modelMapper.map(editora, EditoraDTO.class);
+        return ResponseEntity.ok(editoraDTO);
     }
 
 }

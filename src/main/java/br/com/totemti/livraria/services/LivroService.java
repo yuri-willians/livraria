@@ -5,7 +5,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import br.com.totemti.livraria.dto.LivroDTO;
 import br.com.totemti.livraria.exceptions.RegistroNaoEncontradoException;
 import br.com.totemti.livraria.models.Livro;
 import br.com.totemti.livraria.repositories.LivroRepository;
@@ -34,4 +33,8 @@ public class LivroService {
         return livroRepository.save(livro);
     }
 
+    public void excluir(Long id) {
+        Livro livro = buscar(id);
+        livroRepository.delete(livro);
+    }
 }

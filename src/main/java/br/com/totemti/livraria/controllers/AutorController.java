@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.totemti.livraria.dto.AutorDTO;
+import br.com.totemti.livraria.controllers.dto.AutorDTO;
 import br.com.totemti.livraria.models.Autor;
 import br.com.totemti.livraria.services.AutorService;
 

@@ -1,21 +1,31 @@
 package br.com.totemti.livraria.controllers;
 
+import java.net.URI;
+
+import javax.validation.Valid;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import br.com.totemti.livraria.dto.AutorDTO;
-import br.com.totemti.livraria.dto.LivroDTO;
+import br.com.totemti.livraria.controllers.dto.AutorDTO;
+import br.com.totemti.livraria.controllers.dto.LivroDTO;
+import br.com.totemti.livraria.controllers.dto.LivroFormDTO;
 import br.com.totemti.livraria.models.Editora;
 import br.com.totemti.livraria.models.Livro;
 import br.com.totemti.livraria.services.AutorService;
@@ -42,6 +52,7 @@ public class LivroController {
         this.editoraService = editoraService;
     }
     
+    @Cacheable(value = "livros")
     @GetMapping
     public ResponseEntity<Page<LivroDTO>> index(@PageableDefault(sort = "nome") Pageable pageable) {
         Page livros = livroService
@@ -58,28 +69,53 @@ public class LivroController {
         return ResponseEntity.ok(LivroDTO);
     }
 
+    @CacheEvict(value = "livros", allEntries = true)
     @Transactional
     @PostMapping
-    public ResponseEntity<LivroDTO> store(@RequestBody LivroDTO livroDTO) {
-        Livro livro = modelMapper.map(livroDTO, Livro.class);
-        atribuirEditora(livro, livroDTO);
-        atribuirAutores(livro, livroDTO);
+    public ResponseEntity<LivroDTO> store(@RequestBody @Valid LivroFormDTO livroFormDTO, UriComponentsBuilder uriComponentsBuilder) {
+        Livro livro = modelMapper.map(livroFormDTO, Livro.class);
+        atribuirEditora(livro, livroFormDTO);
+        atribuirAutores(livro, livroFormDTO);
+
+        LivroDTO novoLivro = modelMapper.map(livroService.salvar(livro), LivroDTO.class);
+
+        URI uri = uriComponentsBuilder.path("/livros/{id}").buildAndExpand(novoLivro.getId()).toUri();
+
+        return ResponseEntity.created(uri).body(novoLivro);
+    }
+
+    @CacheEvict(value = "livros", allEntries = true)
+    @Transactional
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable(name = "id") Long id) {
+        livroService.excluir(id);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @CacheEvict(value = "livros", allEntries = true)
+    @Transactional
+    @PutMapping("/{id}")
+    public ResponseEntity<LivroDTO> update(@PathVariable(name = "id") Long id, @RequestBody @Valid LivroFormDTO livroFormDTO) {
+        Livro livro = modelMapper.map(livroFormDTO, Livro.class);
+        livro.setId(id);
+        atribuirEditora(livro, livroFormDTO);
+        atribuirAutores(livro, livroFormDTO);
 
         LivroDTO novoLivro = modelMapper.map(livroService.salvar(livro), LivroDTO.class);
 
         return ResponseEntity.ok(novoLivro);
     }
     
-    private void atribuirEditora(Livro livro, LivroDTO livroDTO) {
-        Editora editora = editoraService.buscar(livroDTO.getEditora().getId());
+    private void atribuirEditora(Livro livro, LivroFormDTO livroFormDTO) {
+        Editora editora = editoraService.buscar(livroFormDTO.getEditora());
         livro.setEditora(editora);
     }
 
-    private void atribuirAutores(Livro livro, LivroDTO livroDTO) {
-
-        if (livroDTO.getAutores() != null && !livroDTO.getAutores().isEmpty()) {
-            for (AutorDTO autorDTO : livroDTO.getAutores()) {
-                livro.incluirAutor(autorService.buscar(autorDTO.getId()));
+    private void atribuirAutores(Livro livro, LivroFormDTO livroFormDTO) {
+        if (livroFormDTO.getAutores() != null && !livroFormDTO.getAutores().isEmpty()) {
+            for (Long autor : livroFormDTO.getAutores()) {
+                livro.incluirAutor(autorService.buscar(autor));
             }
         }
     }

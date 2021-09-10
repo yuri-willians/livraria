@@ -18,6 +18,7 @@ import br.com.totemti.livraria.services.AutenticacaoService;
 @Configuration
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
+
     private AutenticacaoService autenticacaoService;
 
     @Autowired
@@ -36,13 +37,14 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(autenticacaoService).passwordEncoder(new BCryptPasswordEncoder());
     }
-    
+
     // Configurações de autorização
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        // DESLIGANDO CORS (NÃO FAÇA ISSO!)
         http.cors().disable().csrf().disable();
-        http.authorizeRequests().antMatchers(HttpMethod.POST, "/autenticacao").permitAll().and().formLogin();
+        http.authorizeRequests().antMatchers(HttpMethod.POST, "/autenticacao").permitAll()
+        .and()
+        .formLogin();
     }
 
     // Configuração de recursos estáticos

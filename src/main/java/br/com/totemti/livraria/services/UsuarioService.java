@@ -9,7 +9,7 @@ import br.com.totemti.livraria.repositories.UsuarioRepository;
 
 @Service
 public class UsuarioService {
-    
+
     private UsuarioRepository usuarioRepository;
 
     @Autowired
@@ -17,15 +17,16 @@ public class UsuarioService {
         this.usuarioRepository = usuarioRepository;
     }
 
-    public Usuario buscarPorId(Long id) {
+    public Usuario buscar(Long id) {
         return usuarioRepository
         .findById(id)
-        .orElseThrow(() -> new RegistroNaoEncontradoException("usuario.naoEncontrado"));
+        .orElseThrow( () -> new RegistroNaoEncontradoException("usuario.naoEncontrado"));
     }
 
     public Usuario buscarPorEmail(String email) {
         return usuarioRepository
         .findByEmail(email)
-        .orElseThrow(() -> new RegistroNaoEncontradoException("usuario.naoEncontrado"));
+        .orElseThrow( () -> new RegistroNaoEncontradoException("usuario.naoEncontrado"));
     }
+    
 }

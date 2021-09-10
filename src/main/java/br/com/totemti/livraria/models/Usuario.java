@@ -33,10 +33,15 @@ public class Usuario extends Entidade implements UserDetails {
             foreignKey = @ForeignKey(name = "fk_usuario_perfil_usuario")),
         inverseJoinColumns = @JoinColumn(name = "id_perfil",
             foreignKey = @ForeignKey(name = "fk_usuario_perfil_perfil")))
-
     private Set<Perfil> perfis;
 
+    public Set<Perfil> getPerfis() {
+        return this.perfis;
+    }
 
+    public void setPerfis(Set<Perfil> perfis) {
+        this.perfis = perfis;
+    }
 
     public String getNome() {
         return this.nome;
@@ -96,4 +101,5 @@ public class Usuario extends Entidade implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
 }

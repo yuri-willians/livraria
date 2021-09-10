@@ -27,5 +27,4 @@ public class Perfil extends Entidade implements GrantedAuthority {
         return nome;
     }
 
-    
 }

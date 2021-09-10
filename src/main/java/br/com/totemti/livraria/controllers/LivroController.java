@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import br.com.totemti.livraria.controllers.dto.AutorDTO;
 import br.com.totemti.livraria.controllers.dto.LivroDTO;
 import br.com.totemti.livraria.controllers.dto.LivroFormDTO;
 import br.com.totemti.livraria.models.Editora;

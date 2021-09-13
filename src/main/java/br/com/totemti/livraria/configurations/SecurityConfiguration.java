@@ -10,9 +10,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import br.com.totemti.livraria.services.AutenticacaoService;
+import br.com.totemti.livraria.services.UsuarioService;
 
 @EnableWebSecurity
 @Configuration
@@ -20,10 +23,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 
     private AutenticacaoService autenticacaoService;
+    private UsuarioService usuarioService;
 
     @Autowired
-    public SecurityConfiguration(AutenticacaoService autenticacaoService) {
+    public SecurityConfiguration(AutenticacaoService autenticacaoService, UsuarioService usuarioService) {
         this.autenticacaoService = autenticacaoService;
+        this.usuarioService = usuarioService;
     }
 
     @Bean
@@ -41,15 +46,25 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     // Configurações de autorização
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.cors().disable().csrf().disable();
         http.authorizeRequests().antMatchers(HttpMethod.POST, "/autenticacao").permitAll()
+        .anyRequest()
+        .authenticated()
         .and()
-        .formLogin();
+        .cors()
+        .and()
+        .csrf()
+        .disable()
+        .sessionManagement()
+        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        .and()
+        .addFilterBefore(new AutenticacaoFilter(autenticacaoService, usuarioService), 
+        UsernamePasswordAuthenticationFilter.class);
     }
 
     // Configuração de recursos estáticos
     @Override
     public void configure(WebSecurity web) throws Exception {
-        super.configure(web);
+        web.ignoring()
+            .antMatchers("/*.html", "/v2/api-docs", "/webjars/**", "/configuration/**", "/swagger-resources/**");
     }
 }

@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.totemti.livraria.controllers.dto.LoginDTO;
+import br.com.totemti.livraria.controllers.dto.TokenDTO;
+import br.com.totemti.livraria.services.AutenticacaoService;
 
 @RestController
 @RequestMapping(value = "/autenticacao")
@@ -19,17 +21,22 @@ public class AutenticacaoController {
 
     private AuthenticationManager authenticationManager;
 
+    private AutenticacaoService autenticacaoService;
+
     @Autowired
-    public AutenticacaoController(AuthenticationManager authenticationManager) {
+    public AutenticacaoController(AuthenticationManager authenticationManager, AutenticacaoService autenticacaoService) {
         this.authenticationManager = authenticationManager;
+        this.autenticacaoService = autenticacaoService;
     }
 
     @PostMapping
-    public ResponseEntity<String> store(@RequestBody @Valid LoginDTO loginDTO) {
+    public ResponseEntity<TokenDTO> store(@RequestBody @Valid LoginDTO loginDTO) {
         UsernamePasswordAuthenticationToken login = 
         new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getSenha());
         authenticationManager.authenticate(login);
 
-        return ResponseEntity.ok().body("teste");
+        TokenDTO tokenDTO = new TokenDTO("Bearer", autenticacaoService.getToken(login));
+
+        return ResponseEntity.ok().body(tokenDTO);
     }
 }
